@@ -8,6 +8,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+from fastapi import FastAPI, Request, Form, Depends, status
+from fastapi.responses import RedirectResponse
+
+from .tasks import send_welcome_email_task
 
 from .database import SessionLocal, engine, Base
 from . import models
@@ -56,7 +60,7 @@ def register_post(
     db.commit()
     db.refresh(user)
 
-    background_tasks.add_task(send_welcome_email, user.email)
+    send_welcome_email_task.delay(user.email)
 
     return RedirectResponse(url="/login?msg=registered", status_code=status.HTTP_303_SEE_OTHER)
 
