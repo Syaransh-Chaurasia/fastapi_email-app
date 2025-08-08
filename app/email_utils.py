@@ -5,12 +5,13 @@ from email.message import EmailMessage
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.sendgrid.net")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "apikey")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")  # loaded from environment
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 FROM_EMAIL = os.getenv("FROM_EMAIL", SMTP_USER or "no-reply@example.com")
-
 
 def send_welcome_email(to_email: str):
     print(f"[Email] Preparing to send email to {to_email}")
+    print(f"[Email] SMTP_HOST={SMTP_HOST}, SMTP_USER={SMTP_USER}, FROM_EMAIL={FROM_EMAIL}")
+
     msg = EmailMessage()
     msg["Subject"] = "Welcome to MyApp 🎉"
     msg["From"] = FROM_EMAIL
@@ -29,6 +30,8 @@ def send_welcome_email(to_email: str):
             if SMTP_USER and SMTP_PASSWORD:
                 print(f"[Email] Logging in as {SMTP_USER}")
                 server.login(SMTP_USER, SMTP_PASSWORD)
+            else:
+                print("[Email] SMTP_USER or SMTP_PASSWORD not set. Skipping login.")
             server.send_message(msg)
             print("[Email] Email sent successfully!")
     except Exception as e:
