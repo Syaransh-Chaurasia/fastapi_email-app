@@ -1,0 +1,9 @@
+body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width: 800px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;}
+h1 { margin:0; }
+form { background:#f8f8f8; padding:1rem; border-radius:6px; }
+label { display:block; margin-bottom:0.5rem; }
+input { padding:0.4rem; margin-left:0.5rem; }
+button { margin-top:0.8rem; padding:0.5rem 1rem; border-radius:6px; }
+.error { color: #b00020; }
+.success { color: #0a7d00; }
