@@ -4,8 +4,8 @@ from email.message import EmailMessage
 
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.sendgrid.net")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USER = os.getenv("SMTP_USER", "apikey")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+SMTP_USER = os.getenv("SMTP_USER", "apikey")  # "apikey" is SendGrid's SMTP username
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")    # Your actual SendGrid API key here
 FROM_EMAIL = os.getenv("FROM_EMAIL", SMTP_USER or "no-reply@example.com")
 
 def send_welcome_email(to_email: str):

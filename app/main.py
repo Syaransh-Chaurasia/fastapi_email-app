@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import os
-from fastapi import FastAPI, Request, Form, BackgroundTasks, Depends, status
+from fastapi import FastAPI, Request, Form, Depends, status
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from .database import SessionLocal, engine, Base
 from . import models
-from .email_utils import send_welcome_email
+from .tasks import send_welcome_email_task  # Celery task import
 
 Base.metadata.create_all(bind=engine)
 
@@ -39,7 +39,6 @@ def register_get(request: Request):
 @app.post("/register")
 def register_post(
         request: Request,
-        background_tasks: BackgroundTasks,
         email: str = Form(...),
         password: str = Form(...),
         db: Session = Depends(get_db),
@@ -56,7 +55,8 @@ def register_post(
     db.commit()
     db.refresh(user)
 
-    background_tasks.add_task(send_welcome_email, user.email)
+    # Use Celery task instead of FastAPI BackgroundTasks
+    send_welcome_email_task.delay(user.email)
 
     return RedirectResponse(url="/login?msg=registered", status_code=status.HTTP_303_SEE_OTHER)
 
