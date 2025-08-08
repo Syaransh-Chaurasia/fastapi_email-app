@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import os
 from fastapi import FastAPI, Request, Form, BackgroundTasks, Depends, status
 from fastapi.responses import RedirectResponse
