@@ -1,35 +1,26 @@
-from .celery_worker import celery_app
 import os
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
-from dotenv import load_dotenv
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
+from app.celery_app import celery_app
 
-load_dotenv()
+conf = ConnectionConfig(
+    MAIL_USERNAME=os.getenv("MAIL_USERNAME"),
+    MAIL_PASSWORD=os.getenv("MAIL_PASSWORD"),
+    MAIL_FROM=os.getenv("MAIL_FROM"),
+    MAIL_PORT=int(os.getenv("MAIL_PORT")),
+    MAIL_SERVER=os.getenv("MAIL_SERVER"),
+    MAIL_STARTTLS=os.getenv("MAIL_STARTTLS") == "True",
+    MAIL_SSL_TLS=os.getenv("MAIL_SSL_TLS") == "True",
+    USE_CREDENTIALS=True,
+    VALIDATE_CERTS=True,
+)
 
-SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
-EMAIL_FROM = os.getenv("EMAIL_FROM")
-
-@celery_app.task
-def send_email_task(to_email: str, subject: str, body: str):
-    message = Mail(
-        from_email=EMAIL_FROM,
-        to_emails=to_email,
-        subject=subject,
-        html_content=body
+@celery_app.task(name="send_welcome_email_task")
+def send_welcome_email_task(email: str):
+    message = MessageSchema(
+        subject="Welcome to FastAPI + Celery Mail",
+        recipients=[email],
+        body="Thanks for registering at our app!",
+        subtype="plain",
     )
-    try:
-        sg = SendGridAPIClient(SENDGRID_API_KEY)
-        sg.send(message)
-        return {"status": "Email sent successfully"}
-    except Exception as e:
-        return {"status": "failed", "error": str(e)}
-
-@celery_app.task
-def send_welcome_email_task(to_email: str):
-    subject = "Welcome to Our Service!"
-    body = """
-    <h1>Welcome!</h1>
-    <p>Thank you for registering. We're excited to have you with us.</p>
-    """
-    # Call the generic send_email_task synchronously here (within Celery task)
-    return send_email_task(to_email, subject, body)
+    fm = FastMail(conf)
+    fm.send_message(message)

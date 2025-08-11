@@ -2,19 +2,22 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>MyApp</title>
-    <link rel="stylesheet" href="/static/css/styles.css" />
+    <title>fastapi-celery-mail</title>
 </head>
 <body>
 <header>
-    <h1>MyApp</h1>
-    <nav><a href="/register">Register</a> | <a href="/login">Login</a></nav>
+    <h1>fastapi-celery-mail</h1>
+    <nav>
+        <a href="/">Home</a> |
+        <a href="/register">Register</a> |
+        <a href="/login">Login</a>
+    </nav>
+    <hr/>
 </header>
+
 <main>
-    {% block content %}{% endblock %}
+    <h2>Welcome</h2>
+    <p>This is a small demo app: register and receive a welcome email via Celery.</p>
 </main>
-<footer>
-    <small>Demo app</small>
-</footer>
 </body>
 </html>

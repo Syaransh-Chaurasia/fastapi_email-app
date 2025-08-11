@@ -1,38 +1,39 @@
+# app/email_utils.py
 import os
+from dotenv import load_dotenv
+load_dotenv()
 import smtplib
 from email.message import EmailMessage
 
-SMTP_HOST = os.getenv("SMTP_HOST", "smtp.sendgrid.net")
+SMTP_HOST = os.getenv("SMTP_HOST", "")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USER = os.getenv("SMTP_USER", "apikey")  # "apikey" is SendGrid's SMTP username
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")    # Your actual SendGrid API key here
-FROM_EMAIL = os.getenv("FROM_EMAIL", SMTP_USER or "no-reply@example.com")
+SMTP_USER = os.getenv("SMTP_USER", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", "noreply@example.com")
+SMTP_USE_TLS = os.getenv("SMTP_USE_TLS", "True").lower() in ("1", "true", "yes")
 
-def send_welcome_email(to_email: str):
-    print(f"[Email] Preparing to send email to {to_email}")
-    print(f"[Email] SMTP_HOST={SMTP_HOST}, SMTP_USER={SMTP_USER}, FROM_EMAIL={FROM_EMAIL}")
+def send_welcome_email(to_email: str, name: str | None = None) -> None:
+    """
+    Send a simple welcome email synchronously (this function will be called inside Celery worker).
+    """
+    subject = "Welcome!"
+    body = f"Hi {name or ''},\n\nThanks for registering. Welcome aboard!\n\n— The Team"
 
     msg = EmailMessage()
-    msg["Subject"] = "Welcome to MyApp 🎉"
-    msg["From"] = FROM_EMAIL
+    msg["Subject"] = subject
+    msg["From"] = SMTP_FROM_EMAIL
     msg["To"] = to_email
-    msg.set_content(
-        f"Hi,\n\nThanks for registering at MyApp. We're excited to have you.\n\n— The MyApp Team"
-    )
+    msg.set_content(body)
 
-    try:
-        print(f"[Email] Connecting to SMTP server {SMTP_HOST}:{SMTP_PORT}")
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as server:
-            server.ehlo()
-            if SMTP_PORT in (587, 25, 2525):
-                server.starttls()
-                server.ehlo()
-            if SMTP_USER and SMTP_PASSWORD:
-                print(f"[Email] Logging in as {SMTP_USER}")
-                server.login(SMTP_USER, SMTP_PASSWORD)
-            else:
-                print("[Email] SMTP_USER or SMTP_PASSWORD not set. Skipping login.")
-            server.send_message(msg)
-            print("[Email] Email sent successfully!")
-    except Exception as e:
-        print(f"[Email] Failed to send email: {e}")
+    if SMTP_USE_TLS:
+        server = smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10)
+        server.starttls()
+    else:
+        server = smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=10)
+
+    # if user/pass provided, login; else skip (some SMTP relays don't require)
+    if SMTP_USER and SMTP_PASSWORD:
+        server.login(SMTP_USER, SMTP_PASSWORD)
+
+    server.send_message(msg)
+    server.quit()
