@@ -1,10 +1,11 @@
 # app/config.py
-from pydantic import BaseSettings, EmailStr, AnyUrl
+from pydantic import EmailStr
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     APP_NAME: str = "fastapi-celery-mail"
-    SECRET_KEY: str
+    SECRET_KEY: str = "change-this-in-production"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 1 day
     ALGORITHM: str = "HS256"
 
