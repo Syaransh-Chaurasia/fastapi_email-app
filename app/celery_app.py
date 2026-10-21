@@ -4,11 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Get Redis URL from environment or fallback (update your env on Render)
-redis_url = os.getenv(
-    "REDIS_URL",
-    "redis://:<password>@redis-17850.c90.us-east-1-3.ec2.redns.redis-cloud.com:17850/0"
-)
+# Get Redis URL from environment or local fallback
+redis_url = os.getenv("REDIS_URL") or os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
 
 celery_app = Celery(
     "worker",
